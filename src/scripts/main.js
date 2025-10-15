@@ -10,78 +10,119 @@ const removeColBtn = document.querySelector('.remove-column');
 const MAX = 10;
 const MIN = 2;
 
-function getRowCount() {
-  return table && table.rows ? table.rows.length : 0;
+// Допоміжні функції винесені у "корінь програми"
+function getRowCount(tbl) {
+  return tbl && tbl.rows ? tbl.rows.length : 0;
 }
 
-function getColCount() {
-  if (!table || !table.rows || table.rows.length === 0) {
+function getColCount(tbl) {
+  if (!tbl || !tbl.rows || tbl.rows.length === 0) {
     return 0;
   }
 
-  return table.rows[0].cells.length;
+  const firstRow = tbl.rows[0];
+
+  return firstRow && firstRow.cells ? firstRow.cells.length : 0;
 }
 
-function updateButtons() {
-  const rowCount = getRowCount();
-  const colCount = getColCount();
+function updateButtons(tbl, addRow, remRow, addCol, remCol) {
+  const rowCount = getRowCount(tbl);
+  const colCount = getColCount(tbl);
 
-  appendRowBtn.disabled = rowCount >= MAX;
-  removeRowBtn.disabled = rowCount <= MIN;
-  appendColBtn.disabled = colCount >= MAX;
-  removeColBtn.disabled = colCount <= MIN;
+  addRow.disabled = rowCount >= MAX || colCount === 0;
+  remRow.disabled = rowCount <= MIN;
+  addCol.disabled = colCount >= MAX;
+  remCol.disabled = colCount <= MIN;
 }
 
-appendRowBtn.addEventListener('click', () => {
-  const rowCount = getRowCount();
-  const colCount = getColCount();
+// Основна ініціалізація
+if (table && appendRowBtn && removeRowBtn && appendColBtn && removeColBtn) {
+  appendRowBtn.addEventListener('click', () => {
+    const rowCount = getRowCount(table);
+    const colCount = getColCount(table);
 
-  if (rowCount < MAX && colCount > 0) {
-    const newRow = table.insertRow();
+    if (rowCount < MAX && colCount > 0) {
+      const newRow = table.insertRow();
 
-    for (let i = 0; i < colCount; i++) {
-      newRow.insertCell();
+      for (let i = 0; i < colCount; i++) {
+        newRow.insertCell();
+      }
     }
-  }
-  updateButtons();
-});
 
-removeRowBtn.addEventListener('click', () => {
-  const rowCount = getRowCount();
+    updateButtons(
+      table,
+      appendRowBtn,
+      removeRowBtn,
+      appendColBtn,
+      removeColBtn,
+    );
+  });
 
-  if (rowCount > MIN) {
-    table.deleteRow(rowCount - 1);
-  }
-  updateButtons();
-});
+  removeRowBtn.addEventListener('click', () => {
+    const rowCount = getRowCount(table);
 
-appendColBtn.addEventListener('click', () => {
-  const colCount = getColCount();
-  const rowCount = getRowCount();
-
-  if (colCount < MAX && rowCount > 0) {
-    for (let i = 0; i < rowCount; i++) {
-      const row = table.rows[i];
-
-      row.insertCell();
+    if (rowCount > MIN) {
+      table.deleteRow(rowCount - 1);
     }
-  }
-  updateButtons();
-});
 
-removeColBtn.addEventListener('click', () => {
-  const colCount = getColCount();
-  const rowCount = getRowCount();
+    updateButtons(
+      table,
+      appendRowBtn,
+      removeRowBtn,
+      appendColBtn,
+      removeColBtn,
+    );
+  });
 
-  if (colCount > MIN && rowCount > 0) {
-    for (let i = 0; i < rowCount; i++) {
-      const row = table.rows[i];
+  appendColBtn.addEventListener('click', () => {
+    const colCount = getColCount(table);
+    const rowCount = getRowCount(table);
 
-      row.deleteCell(row.cells.length - 1);
+    if (colCount < MAX && rowCount > 0) {
+      for (let i = 0; i < rowCount; i++) {
+        const row = table.rows[i];
+
+        if (row) {
+          row.insertCell();
+        }
+      }
     }
-  }
-  updateButtons();
-});
 
-// Ініціалізація стану кнопок
-updateButtons();
+    updateButtons(
+      table,
+      appendRowBtn,
+      removeRowBtn,
+      appendColBtn,
+      removeColBtn,
+    );
+  });
+
+  removeColBtn.addEventListener('click', () => {
+    const colCount = getColCount(table);
+    const rowCount = getRowCount(table);
+
+    if (colCount > MIN && rowCount > 0) {
+      for (let i = 0; i < rowCount; i++) {
+        const row = table.rows[i];
+
+        if (row && row.cells && row.cells.length > 0) {
+          row.deleteCell(row.cells.length - 1);
+        }
+      }
+    }
+
+    updateButtons(
+      table,
+      appendRowBtn,
+      removeRowBtn,
+      appendColBtn,
+      removeColBtn,
+    );
+  });
+
+  // Початкова ініціалізація стану кнопок
+  updateButtons(table, appendRowBtn, removeRowBtn, appendColBtn, removeColBtn);
+} else {
+  // console.warn ('Growth table script: required DOM elements missing
+  // — initialization skipped.');
+}
