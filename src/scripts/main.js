@@ -10,9 +10,21 @@ const removeColBtn = document.querySelector('.remove-column');
 const MAX = 10;
 const MIN = 2;
 
+function getRowCount() {
+  return table && table.rows ? table.rows.length : 0;
+}
+
+function getColCount() {
+  if (!table || !table.rows || table.rows.length === 0) {
+    return 0;
+  }
+
+  return table.rows[0].cells.length;
+}
+
 function updateButtons() {
-  const rowCount = table.rows.length;
-  const colCount = table.rows[0].cells.length;
+  const rowCount = getRowCount();
+  const colCount = getColCount();
 
   appendRowBtn.disabled = rowCount >= MAX;
   removeRowBtn.disabled = rowCount <= MIN;
@@ -21,13 +33,13 @@ function updateButtons() {
 }
 
 appendRowBtn.addEventListener('click', () => {
-  const rowCount = table.rows.length;
+  const rowCount = getRowCount();
+  const colCount = getColCount();
 
-  if (rowCount < MAX) {
+  if (rowCount < MAX && colCount > 0) {
     const newRow = table.insertRow();
-    const cols = table.rows[0].cells.length;
 
-    for (let i = 0; i < cols; i++) {
+    for (let i = 0; i < colCount; i++) {
       newRow.insertCell();
     }
   }
@@ -35,19 +47,22 @@ appendRowBtn.addEventListener('click', () => {
 });
 
 removeRowBtn.addEventListener('click', () => {
-  const rowCount = table.rows.length;
+  const rowCount = getRowCount();
 
   if (rowCount > MIN) {
-    table.deleteRow(-1);
+    table.deleteRow(rowCount - 1);
   }
   updateButtons();
 });
 
 appendColBtn.addEventListener('click', () => {
-  const colCount = table.rows[0].cells.length;
+  const colCount = getColCount();
+  const rowCount = getRowCount();
 
-  if (colCount < MAX) {
-    for (const row of table.rows) {
+  if (colCount < MAX && rowCount > 0) {
+    for (let i = 0; i < rowCount; i++) {
+      const row = table.rows[i];
+
       row.insertCell();
     }
   }
@@ -55,15 +70,18 @@ appendColBtn.addEventListener('click', () => {
 });
 
 removeColBtn.addEventListener('click', () => {
-  const colCount = table.rows[0].cells.length;
+  const colCount = getColCount();
+  const rowCount = getRowCount();
 
-  if (colCount > MIN) {
-    for (const row of table.rows) {
-      row.deleteCell(-1);
+  if (colCount > MIN && rowCount > 0) {
+    for (let i = 0; i < rowCount; i++) {
+      const row = table.rows[i];
+
+      row.deleteCell(row.cells.length - 1);
     }
   }
   updateButtons();
 });
 
-// Ініціалізація стану кнопок при завантаженні
+// Ініціалізація стану кнопок
 updateButtons();
